@@ -1,0 +1,11 @@
+{
+  "name": "@backplane-software/backplane-azure",
+  "version": "0.1.0",
+  "description": "Backplane Azure Module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "lewis@backplane.cloud",
+  "license": "MIT"
+}

@@ -3,9 +3,21 @@
   "version": "0.1.0",
   "description": "Backplane Azure Module",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "lewis@backplane.cloud",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/backplane-cloud/backplane-azure.git"
+  },
+  "bugs": {
+    "url": "https://github.com/backplane-cloud/backplane-azure/issues"
+  },
+  "homepage": "https://github.com/backplane-cloud/backplane-azure#readme",
+  "dependencies": {
+    "express-async-handler": "^1.2.0"
+  }
 }

@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/backplane-cloud/backplane-azure#readme",
   "dependencies": {
+    "@azure/arm-resources": "^5.2.0",
+    "@azure/identity": "^4.0.1",
     "express-async-handler": "^1.2.0"
   }
 }

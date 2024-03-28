@@ -1,3 +1,5 @@
+![Backplane Logo](backplane-logo.svg)
+
 # @backplane-software/backplane-azure
 
 This is a library module for Azure which exports the functions:

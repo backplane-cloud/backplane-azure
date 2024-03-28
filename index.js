@@ -1,17 +1,72 @@
 import asyncHandler from "express-async-handler";
+import { AuthorizationManagementClient } from "@azure/arm-authorization";
+import { ClientSecretCredential } from "@azure/identity";
+import { ResourceManagementClient } from "@azure/arm-resources";
 
 // Azure SDK API
 
 // import { SubscriptionClient } from "@azure/arm-subscriptions";
 // import { BillingManagementClient } from "@azure/arm-billing";
-import { ResourceManagementClient } from "@azure/arm-resources";
-
-// ACTIVE
-import { ClientSecretCredential } from "@azure/identity";
 // import { AuthorizationManagementClient } from "@azure/arm-authorization";
 // import { PolicyClient } from "@azure/arm-policy";
 
 // Internal Function to Create Azure Environments
+
+async function roleAssignments_listForScope(subscriptionId) {
+  let result = [];
+  for await (const item of client.roleAssignments.listForScope(
+    `/subscriptions/${subscriptionId}`
+  )) {
+    result.push(item);
+  }
+  return result;
+}
+
+async function roleAssignments_listForResourceGroup(
+  environments,
+  credentials,
+  subscriptionId
+) {
+  let masterResult = [];
+  let client = {};
+  client = new AuthorizationManagementClient(credentials, subscriptionId);
+
+  const resultArr = await Promise.all(
+    environments.map(async (env) => {
+      let result = [];
+      let rg = env.accountId.split("/")[4];
+      // console.log(rg);
+      for await (const item of client.roleAssignments.listForResourceGroup(
+        rg
+      )) {
+        result.push(item);
+      }
+      masterResult.push({ environment: env, assignments: result });
+    })
+  );
+
+  return masterResult;
+}
+
+async function getAzureAccess({ cloudCredentials, environments }) {
+  const { tenantId, clientId, clientSecret, subscriptionId } = cloudCredentials;
+
+  // Authenticate to Cloud Platform
+  const credentials = new ClientSecretCredential(
+    tenantId,
+    clientId,
+    clientSecret
+  );
+  // return environments;
+
+  //let assignments = await roleAssignments_listForScope();
+  let assignments = await roleAssignments_listForResourceGroup(
+    environments,
+    credentials,
+    subscriptionId
+  );
+  return assignments;
+}
 
 const createAzureEnv = asyncHandler(async (req, res) => {
   // AZURE API CODE
@@ -83,4 +138,4 @@ const createAzureEnv = asyncHandler(async (req, res) => {
   return environments;
 });
 
-export { createAzureEnv };
+export { getAzureAccess, createAzureEnv };

@@ -65,6 +65,47 @@ async function getAzureAccess({ cloudCredentials, environments }) {
   return assignments;
 }
 
+async function getAzureCost({ cloudCredentials, environments }) {
+  const { tenantId, clientId, clientSecret, subscriptionId } = cloudCredentials;
+
+  // Authenticate to Cloud Platform
+  const credentials = new ClientSecretCredential(
+    tenantId,
+    clientId,
+    clientSecret
+  );
+
+  const resourceClient = new ResourceManagementClient(
+    credentials,
+    subscriptionId
+  );
+
+  try {
+    let costArr = [];
+    environments.map(async (env) => {
+      const resourceGroupName = env.accountId.split("/")[4];
+      // Get the resource group
+      const resourceGroup = await resourceClient.resourceGroups.get(
+        resourceGroupName
+      );
+      // Retrieve the cost for the resource group
+
+      const cost = resourceGroup.tags
+        ? resourceGroup.tags.cost
+        : "Cost information not available";
+      costArr.push(cost);
+    });
+
+    // console.log(`Cost for resource group ${resourceGroupName}: ${cost}`);
+    return costArr.length !== 0
+      ? costArr
+      : "There is no Cost information available for this App";
+  } catch (error) {
+    console.error("Error retrieving resource group cost:", error);
+    throw error;
+  }
+}
+
 async function policyAssignments_listForResourceGroup(
   environments,
   credentials,
@@ -175,4 +216,4 @@ const createAzureEnv = asyncHandler(async (req, res) => {
   return environments;
 });
 
-export { getAzurePolicies, getAzureAccess, createAzureEnv };
+export { getAzureCost, getAzurePolicies, getAzureAccess, createAzureEnv };

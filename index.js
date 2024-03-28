@@ -2,15 +2,12 @@ import asyncHandler from "express-async-handler";
 import { AuthorizationManagementClient } from "@azure/arm-authorization";
 import { ClientSecretCredential } from "@azure/identity";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { PolicyClient } from "@azure/arm-policy";
 
 // Azure SDK API
 
 // import { SubscriptionClient } from "@azure/arm-subscriptions";
 // import { BillingManagementClient } from "@azure/arm-billing";
-// import { AuthorizationManagementClient } from "@azure/arm-authorization";
-// import { PolicyClient } from "@azure/arm-policy";
-
-// Internal Function to Create Azure Environments
 
 async function roleAssignments_listForScope(subscriptionId) {
   let result = [];
@@ -66,6 +63,46 @@ async function getAzureAccess({ cloudCredentials, environments }) {
     subscriptionId
   );
   return assignments;
+}
+
+async function policyAssignments_listForResourceGroup(
+  environments,
+  credentials,
+  subscriptionId
+) {
+  let masterResult = [];
+  let client = {};
+  client = new PolicyClient(credentials, subscriptionId);
+
+  const arrayList = [];
+  environments.map(async (env) => {
+    let rg = env.accountId.split("/")[4];
+    for await (const policy of client.policyAssignments.listForResourceGroup(
+      rg
+    )) {
+      arrayList.push(policy);
+    }
+  });
+
+  return arrayList;
+}
+
+async function getAzurePolicies({ cloudCredentials, environments }) {
+  const { tenantId, clientId, clientSecret, subscriptionId } = cloudCredentials;
+
+  // Authenticate to Cloud Platform
+  const credentials = new ClientSecretCredential(
+    tenantId,
+    clientId,
+    clientSecret
+  );
+
+  const policies = await policyAssignments_listForResourceGroup(
+    environments,
+    credentials,
+    subscriptionId
+  );
+  return policies;
 }
 
 const createAzureEnv = asyncHandler(async (req, res) => {
@@ -138,4 +175,4 @@ const createAzureEnv = asyncHandler(async (req, res) => {
   return environments;
 });
 
-export { getAzureAccess, createAzureEnv };
+export { getAzurePolicies, getAzureAccess, createAzureEnv };

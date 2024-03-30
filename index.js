@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { AuthorizationManagementClient } from "@azure/arm-authorization";
 import { ClientSecretCredential } from "@azure/identity";
 import { ResourceManagementClient } from "@azure/arm-resources";
+
 import { PolicyClient } from "@azure/arm-policy";
 
 // Azure SDK API
@@ -112,20 +113,22 @@ async function policyAssignments_listForResourceGroup(
   subscriptionId
 ) {
   let masterResult = [];
-  let client = {};
-  client = new PolicyClient(credentials, subscriptionId);
+  const client = new PolicyClient(credentials, subscriptionId);
 
-  const arrayList = [];
-  environments.map(async (env) => {
-    let rg = env.accountId.split("/")[4];
-    for await (const policy of client.policyAssignments.listForResourceGroup(
-      rg
-    )) {
-      arrayList.push(policy);
-    }
-  });
+  await Promise.all(
+    environments.map(async (env) => {
+      let result = [];
+      let rg = env.accountId.split("/")[4];
+      for await (const item of client.policyAssignments.listForResourceGroup(
+        rg
+      )) {
+        result.push(item);
+      }
+      masterResult.push({ environment: env, assignments: result });
+    })
+  );
 
-  return arrayList;
+  return masterResult;
 }
 
 async function getAzurePolicies({ cloudCredentials, environments }) {
@@ -143,6 +146,7 @@ async function getAzurePolicies({ cloudCredentials, environments }) {
     credentials,
     subscriptionId
   );
+
   return policies;
 }
 

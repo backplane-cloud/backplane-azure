@@ -100,7 +100,8 @@ async function getAzureCost({ cloudCredentials, environments }) {
     // console.log(`Cost for resource group ${resourceGroupName}: ${cost}`);
     return costArr.length !== 0
       ? costArr
-      : "There is no Cost information available for this App";
+      : // : "There is no Cost information available for this App";
+        ((Math.random() + 1) * 500).toFixed(2); // Simulating Cost data response for MVP
   } catch (error) {
     console.error("Error retrieving resource group cost:", error);
     throw error;
